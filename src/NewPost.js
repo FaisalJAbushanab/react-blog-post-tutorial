@@ -1,11 +1,34 @@
-import React from 'react'
+import React, { useState, useContext } from 'react'
+import { useNavigate } from 'react-router-dom'
+import DataContext, { DataProvider } from './context/DataContext'
+const NewPost = () => {
+    const { posts, setPosts, api, format } = useContext(DataContext)
+    const [postTitle, setPostTitle] = useState('')
+    const [postBody, setPostBody] = useState('')
+    const navigate = useNavigate()
 
-const NewPost = ({ handleSubmit, postTitle, setPostTitle, postBody, setPostBody }) => {
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        const id = posts.length ? posts[posts.length - 1].id + 1 : 1
+        const datetime = format(new Date(), 'MMM dd, yyy pp');
+        const newPost = { id, title: postTitle, datetime, body: postBody }
+        try{
+          const response = await api.post('/posts', newPost)
+          const allPosts = [...posts, response.data];
+          setPosts(allPosts)
+          setPostTitle('');
+          setPostBody('');
+          navigate('/')
+        } catch(err){
+          console.log(`Error: ${err.message}`)
+        }
+      }
+
     return (
-        <main class="NewPost">
+        <main className="NewPost">
             <h2>New Post</h2>
             <form className="newPostForm" onSubmit={handleSubmit}>
-                <lable htmlFor="postTitle">Title: </lable>
+                <label htmlFor="postTitle">Title: </label>
                 <input
                     id="postTitle"
                     type="text"
@@ -13,7 +36,7 @@ const NewPost = ({ handleSubmit, postTitle, setPostTitle, postBody, setPostBody 
                     value={postTitle}
                     onChange={(e) => setPostTitle(e.target.value)}
                 />
-                <lable htmlFor="postBoody"> Post: </lable>
+                <label htmlFor="postBoody"> Post: </label>
                 <textarea
                     id="postBody"
                     required
